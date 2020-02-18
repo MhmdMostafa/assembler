@@ -37,6 +37,8 @@ pass1or2 = 1
 locctr = 0
 lookahead = ''
 startLine = True
+totalsize = 0
+startaddress = 0
 
 Xbit4set = 0x800000
 Bbit4set = 0x400000
@@ -113,7 +115,7 @@ def lexan():
             p = lookup(bytestring)
             if p == -1:
                 p = insert(bytestring, 'STRING', bytestringvalue)  # should we deal with literals?
-            tokenval = p
+            tokenval = len(bytestring)
         elif (filecontent[bufferindex] == '\''): # a string can start with C' or only with '
             bytestring = ''
             bufferindex += 1
@@ -128,7 +130,7 @@ def lexan():
             p = lookup(bytestring)
             if p == -1:
                 p = insert(bytestring, 'STRING', bytestringvalue)  # should we deal with literals?
-            tokenval = p
+            tokenval = len(bytestring)
         elif (filecontent[bufferindex].upper() == 'X') and (filecontent[bufferindex+1] == '\''):
             bufferindex += 2
             bytestring = filecontent[bufferindex]
@@ -183,15 +185,123 @@ def checkindex():
     return False
 
 def parse():
-    pass
-    # write the parser here
+    global file, filecontent, locctr, pass1or2, bufferindex, lineno, lookahead
+
+    sic()
+
+    print("string\ttoken\tatt")
+    for i in range(len(symtable)):
+        if symtable[i].token == "ID":
+            print(symtable[i].string, "   ",
+                  symtable[i].token, "   ", symtable[i].att)
+    print(totalsize)
+
+
+def sic():
+    header()
+    body()
+    tail()
+
+
+def header():
+    global lookahead, locctr, startLine, pass1or2, startaddress
+    startLine = True
+    lookahead = lexan()
+    match("ID")
+    startLine = False
+    match("START")
+    locctr = startaddress = tokenval
+    match("NUM")
+
+
+def tail():
+    global totalsize, locctr, tokenval, startaddress
+    match("END")
+    totalsize = locctr-startaddress
+    match("ID")
+
+
+def body():
+    global lookahead, startLine
+    startLine = True
+    if lookahead == "ID":
+        match("ID")
+        startLine = False
+        rest1()
+        body()
+    elif lookahead == "f3":
+        stmt()
+        body()
+    else:
+        return
+
+
+def rest1():
+    global lookahead
+    if lookahead == "f3":
+        stmt()
+    elif lookahead == "WORD" or lookahead == "RESW" or lookahead == "RESB" or lookahead == "BYTE":
+        data()
+    else:
+        error('Syntax error')
+
+
+def stmt():
+    global lookahead, locctr
+    locctr += 3
+    match("f3")
+    match("ID")
+    index()
+
+
+def index():
+    global lookahead
+    if lookahead == ",":
+        match(",")
+        match("REG")
+    else:
+        return
+
+
+def data():
+    global lookahead, tokenval, locctr
+    if lookahead == "WORD":
+        match("WORD")
+        locctr += 3
+        match("NUM")
+    elif lookahead == "RESW":
+        match("RESW")
+        locctr += 3*tokenval
+        match("NUM")
+    elif lookahead == "RESB":
+        match("RESB")
+        locctr += tokenval
+        match("NUM")
+    elif lookahead == "BYTE":
+        match("BYTE")
+        rest2()
+    else:
+        error('Syntax error')
+
+
+def rest2():
+    global lookahead, locctr
+    if lookahead == "STRING":
+        locctr += tokenval
+        match("STRING")
+    elif lookahead == "HEX":
+        match("HEX")
+        locctr += len(lookahead)/2
+    else:
+        error('Syntax error')
+
 
 
 def main():
     global file, filecontent, locctr, pass1or2, bufferindex, lineno
     init()
     w = file.read()
-    filecontent=re.split("([\W])", w)
+    filecontent=re.split(r"([\W])", w)
     i=0
     while True:
         while (filecontent[i] == ' ') or (filecontent[i] == '') or (filecontent[i] == '\t'):
