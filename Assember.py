@@ -291,6 +291,8 @@ def stmt_ex():
         match("+")
         match("f3")
         rest4()
+    else:
+        error('Syntax error')
     pass
 
 def rest3():
@@ -325,6 +327,8 @@ def rest4():
         match("@")
         match("NUM")
         index()
+    else:
+        error('Syntax error')
 
 
 def rest1():
