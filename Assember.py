@@ -81,12 +81,12 @@ def lexan():
         # if filecontent == []:
         if len(filecontent) == bufferindex:
             return 'EOF'
-        elif filecontent[bufferindex] == '#':
-            defid = True
-            while filecontent[bufferindex] != '\n':
-                bufferindex = bufferindex + 1
-            lineno += 1
-            bufferindex = bufferindex + 1
+        # elif filecontent[bufferindex] == '#':
+        #     defid = True
+        #     while filecontent[bufferindex] != '\n':
+        #         bufferindex = bufferindex + 1
+        #     lineno += 1
+        #     bufferindex = bufferindex + 1
         elif filecontent[bufferindex] == '\n':
             defid = True
             # del filecontent[bufferindex]
@@ -279,7 +279,6 @@ def stmt_ex():
     global lookahead
     if lookahead=="f1":
         match("f1")
-        
     elif lookahead=="f2":
         match("f2")
         match("REG")
@@ -293,7 +292,6 @@ def stmt_ex():
         rest4()
     else:
         error('Syntax error')
-    pass
 
 def rest3():
     global lookahead, inst
