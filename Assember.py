@@ -212,6 +212,7 @@ def checkindex():
 def parse():
     global file, filecontent, locctr, pass1or2, bufferindex, lineno, lookahead
     sic()
+    sic_xe()
     # print("string\ttoken\tatt")
     # for i in range(len(symtable)):
     #     if symtable[i].token == "ID":
@@ -221,6 +222,11 @@ def parse():
 
 
 def sic():
+    header()
+    body()
+    tail()
+
+def sic_xe():
     header()
     body()
     tail()
@@ -267,6 +273,58 @@ def body():
         body()
     else:
         return
+
+
+def stmt_ex():
+    global lookahead
+    if lookahead=="f1":
+        match("f1")
+        
+    elif lookahead=="f2":
+        match("f2")
+        match("REG")
+        rest3()
+    elif lookahead=="f3":
+        match("f3")
+        rest4()
+    elif lookahead=="+":
+        match("+")
+        match("f3")
+        rest4()
+    pass
+
+def rest3():
+    global lookahead, inst
+    if lookahead == ",":
+        match(",")
+        match("REG")
+    else:
+        return
+
+def rest4():
+    global lookahead
+    if lookahead=="ID":
+        match("ID")
+        index()
+    elif lookahead=="#":
+        match("#")
+        match("ID")
+        index()
+    elif lookahead=="@":
+        match("@")
+        match("ID")
+        index()
+    elif lookahead=="NUM":
+        match("NUM")
+        index()
+    elif lookahead=="#":
+        match("#")
+        match("NUM")
+        index()
+    elif lookahead=="@":
+        match("@")
+        match("NUM")
+        index()
 
 
 def rest1():
