@@ -1,8 +1,9 @@
-# Disable writing .pyc files
-import sys
-sys.dont_write_bytecode = True
 import re
 import instfile
+import sys
+
+# Disable writing .pyc files
+sys.dont_write_bytecode = True
 
 
 class Entry:
@@ -33,19 +34,18 @@ def init():
     for i in range(0, instfile.inst.__len__()):
         insert(instfile.inst[i], instfile.token[i], instfile.opcode[i])
     for i in range(0, instfile.directives.__len__()):
-        insert(instfile.directives[i], instfile.dirtoken[i],
-               instfile.dircode[i])
+        insert(instfile.directives[i], instfile.dirtoken[i], instfile.dircode[i])
 
 
-file = open('input.sic', 'r')
-output = open('output.obj', '+w')
+file = open("input.sic", "r")
+output = open("output.obj", "+w")
 filecontent = []
 bufferindex = 0
 tokenval = 0
 lineno = 1
 pass1or2 = 1
 locctr = 0
-lookahead = ''
+lookahead = ""
 defid = True
 totalsize = 0
 startaddress = 0
@@ -67,7 +67,7 @@ Ebit3set = 0x1000
 
 
 def is_hex(s):
-    if s[0:2].upper() == '0X':
+    if s[0:2].upper() == "0X":
         try:
             int(s[2:], 16)
             return True
@@ -83,14 +83,14 @@ def lexan():
     while True:
         # if filecontent == []:
         if len(filecontent) == bufferindex:
-            return 'EOF'
+            return "EOF"
         # elif filecontent[bufferindex] == '#':
         #     defid = True
         #     while filecontent[bufferindex] != '\n':
         #         bufferindex = bufferindex + 1
         #     lineno += 1
         #     bufferindex = bufferindex + 1
-        elif filecontent[bufferindex] == '\n':
+        elif filecontent[bufferindex] == "\n":
             defid = True
             # del filecontent[bufferindex]
             bufferindex = bufferindex + 1
@@ -102,62 +102,66 @@ def lexan():
         tokenval = int(filecontent[bufferindex])
         # del filecontent[bufferindex]
         bufferindex = bufferindex + 1
-        return ('NUM')
+        return "NUM"
     elif is_hex(filecontent[bufferindex]):
         # all number starting with 0x are considered as hex
         tokenval = int(filecontent[bufferindex][2:], 16)
         # del filecontent[bufferindex]
         bufferindex = bufferindex + 1
-        return ('NUM')
-    elif filecontent[bufferindex] in ['+', '#', ',']:
+        return "NUM"
+    elif filecontent[bufferindex] in ["+", "#", ","]:
         c = filecontent[bufferindex]
         # del filecontent[bufferindex]
         bufferindex = bufferindex + 1
-        return (c)
+        return c
     else:
         # check if there is a string or hex starting with C'string' or X'hex'
-        if (filecontent[bufferindex].upper() == 'C') and (
-                filecontent[bufferindex + 1] == '\''):
-            bytestring = ''
+        if (
+            filecontent[bufferindex].upper() == "C"
+            and filecontent[bufferindex + 1] == "'"
+        ):
+            bytestring = ""
             bufferindex += 2
             # should we take into account the missing ' error?
-            while filecontent[bufferindex] != '\'':
+            while filecontent[bufferindex] != "'":
                 bytestring += filecontent[bufferindex]
                 bufferindex += 1
-                if filecontent[bufferindex] != '\'':
-                    bytestring += ' '
+                if filecontent[bufferindex] != "'":
+                    bytestring += " "
             bufferindex += 1
             bytestringvalue = "".join("%02X" % ord(c) for c in bytestring)
-            bytestring = '_' + bytestring
+            bytestring = "_" + bytestring
             p = lookup(bytestring)
             if p == -1:
                 # should we deal with literals?
-                p = insert(bytestring, 'STRING', bytestringvalue)
+                p = insert(bytestring, "STRING", bytestringvalue)
             # MAYBE WRONG
             # MAYBE WRONG
             tokenval = len(bytestring)
         # a string can start with C' or only with '
-        elif (filecontent[bufferindex] == '\''):
-            bytestring = ''
+        elif filecontent[bufferindex] == "'":
+            bytestring = ""
             bufferindex += 1
             # should we take into account the missing ' error?
-            while filecontent[bufferindex] != '\'':
+            while filecontent[bufferindex] != "'":
                 bytestring += filecontent[bufferindex]
                 bufferindex += 1
-                if filecontent[bufferindex] != '\'':
-                    bytestring += ' '
+                if filecontent[bufferindex] != "'":
+                    bytestring += " "
             bufferindex += 1
             bytestringvalue = "".join("%02X" % ord(c) for c in bytestring)
-            bytestring = '_' + bytestring
+            bytestring = "_" + bytestring
             p = lookup(bytestring)
             if p == -1:
                 # should we deal with literals?
-                p = insert(bytestring, 'STRING', bytestringvalue)
+                p = insert(bytestring, "STRING", bytestringvalue)
             # MAYBE WRONG
             # MAYBE WRONG
             tokenval = len(bytestring)
-        elif (filecontent[bufferindex].upper() == 'X') and (
-                filecontent[bufferindex + 1] == '\''):
+        elif (
+            filecontent[bufferindex].upper() == "X"
+            and filecontent[bufferindex + 1] == "'"
+        ):
             bufferindex += 2
             bytestring = filecontent[bufferindex]
             bufferindex += 2
@@ -165,34 +169,34 @@ def lexan():
 
             bytestringvalue = bytestring
             if len(bytestringvalue) % 2 == 1:
-                bytestringvalue = '0' + bytestringvalue
-            bytestring = '_' + bytestring
+                bytestringvalue = "0" + bytestringvalue
+            bytestring = "_" + bytestring
             p = lookup(bytestring)
             if p == -1:
                 # should we deal with literals?
-                p = insert(bytestring, 'HEX', bytestringvalue)
+                p = insert(bytestring, "HEX", bytestringvalue)
             tokenval = p
         else:
             p = lookup(filecontent[bufferindex].upper())
             if p == -1:
                 if defid == True:
                     # should we deal with case-sensitive?
-                    p = insert(filecontent[bufferindex].upper(), 'ID', locctr)
+                    p = insert(filecontent[bufferindex].upper(), "ID", locctr)
                 else:
                     # forward reference
-                    p = insert(filecontent[bufferindex].upper(), 'ID', -1)
+                    p = insert(filecontent[bufferindex].upper(), "ID", -1)
             else:
-                if (symtable[p].att == -1) and (defid == True):
+                if symtable[p].att == -1 and defid == True:
                     symtable[p].att = locctr
             tokenval = p
             # del filecontent[bufferindex]
             bufferindex = bufferindex + 1
-        return (symtable[p].token)
+        return symtable[p].token
 
 
 def error(s):
     global lineno
-    print('line ' + str(lineno) + ': ' + s)
+    print("line " + str(lineno) + ": " + s)
 
 
 def match(token):
@@ -200,16 +204,16 @@ def match(token):
     if lookahead == token:
         lookahead = lexan()
     else:
-        error('Syntax error')
+        error("Syntax error")
 
 
 def checkindex():
     global bufferindex, symtable, tokenval
-    if lookahead == ',':
-        match(',')
+    if lookahead == ",":
+        match(",")
         if symtable[tokenval].att != 1:
-            error('Index register should be X')
-        match('REG')
+            error("Index register should be X")
+        match("REG")
         return True
     return False
 
@@ -244,8 +248,7 @@ def header():
     lookahead = lexan()
     idindex = bufferindex
     if pass1or2 == 2:
-        output.write(
-            f'H{symtable[tokenval].string} {tokenval:06} {totalsize:06x}\n')
+        output.write(f"H{symtable[tokenval].string} {tokenval:06} {totalsize:06x}\n")
     match("ID")
     defid = False
     match("START")
@@ -258,7 +261,7 @@ def tail():
     match("END")
     totalsize = locctr - startaddress
     if pass1or2 == 2:
-        output.write(f'E{symtable[tokenval].att:06x}')
+        output.write(f"E{symtable[tokenval].att:06x}")
     match("ID")
 
 
@@ -297,7 +300,7 @@ def stmt_ex():
         match("f3")
         rest4()
     else:
-        error('Syntax error')
+        error("Syntax error")
 
 
 def rest3():
@@ -334,17 +337,22 @@ def rest4():
         match("NUM")
         index()
     else:
-        error('Syntax error')
+        error("Syntax error")
 
 
 def rest1():
     global lookahead
     if lookahead == "f3":
         stmt()
-    elif lookahead == "WORD" or lookahead == "RESW" or lookahead == "RESB" or lookahead == "BYTE":
+    elif (
+        lookahead == "WORD"
+        or lookahead == "RESW"
+        or lookahead == "RESB"
+        or lookahead == "BYTE"
+    ):
         data()
     else:
-        error('Syntax error')
+        error("Syntax error")
 
 
 def stmt():
@@ -357,7 +365,7 @@ def stmt():
         inst += symtable[tokenval].att
     match("ID")
     if pass1or2 == 2:
-        output.write(f'T{locctr-3:06x} 03 {inst:03x}\n')
+        output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
     index()
 
 
@@ -390,7 +398,7 @@ def data():
         match("BYTE")
         rest2()
     else:
-        error('Syntax error')
+        error("Syntax error")
 
 
 def rest2():
@@ -402,7 +410,7 @@ def rest2():
         match("HEX")
         locctr += lookahead / 2
     else:
-        error('Syntax error')
+        error("Syntax error")
 
 
 def main():
@@ -412,8 +420,11 @@ def main():
     filecontent = re.split(r"([\W])", w)
     i = 0
     while True:
-        while (filecontent[i] == ' ') or (filecontent[i] == '') or (
-                filecontent[i] == '\t'):
+        while (
+            (filecontent[i] == " ")
+            or (filecontent[i] == "")
+            or (filecontent[i] == "\t")
+        ):
             del filecontent[i]
             if len(filecontent) == i:
                 break
@@ -421,8 +432,8 @@ def main():
         if len(filecontent) <= i:
             break
     # to be sure that the content ends with new line
-    if filecontent[len(filecontent) - 1] != '\n':
-        filecontent.append('\n')
+    if filecontent[len(filecontent) - 1] != "\n":
+        filecontent.append("\n")
     for pass1or2 in range(1, 3):
         parse()
         bufferindex = 0
