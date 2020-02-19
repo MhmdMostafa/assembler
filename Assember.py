@@ -1,3 +1,6 @@
+# Disable writing .pyc files
+import sys
+sys.dont_write_bytecode = True
 import re
 import instfile
 
@@ -23,15 +26,15 @@ def lookup(s):
 
 def insert(s, t, a):
     symtable.append(Entry(s, t, a))
-    return symtable.__len__()-1
+    return symtable.__len__() - 1
 
 
 def init():
     for i in range(0, instfile.inst.__len__()):
         insert(instfile.inst[i], instfile.token[i], instfile.opcode[i])
     for i in range(0, instfile.directives.__len__()):
-        insert(instfile.directives[i],
-               instfile.dirtoken[i], instfile.dircode[i])
+        insert(instfile.directives[i], instfile.dirtoken[i],
+               instfile.dircode[i])
 
 
 file = open('input.sic', 'r')
@@ -113,7 +116,8 @@ def lexan():
         return (c)
     else:
         # check if there is a string or hex starting with C'string' or X'hex'
-        if (filecontent[bufferindex].upper() == 'C') and (filecontent[bufferindex+1] == '\''):
+        if (filecontent[bufferindex].upper() == 'C') and (
+                filecontent[bufferindex + 1] == '\''):
             bytestring = ''
             bufferindex += 2
             # should we take into account the missing ' error?
@@ -152,7 +156,8 @@ def lexan():
             # MAYBE WRONG
             # MAYBE WRONG
             tokenval = len(bytestring)
-        elif (filecontent[bufferindex].upper() == 'X') and (filecontent[bufferindex+1] == '\''):
+        elif (filecontent[bufferindex].upper() == 'X') and (
+                filecontent[bufferindex + 1] == '\''):
             bufferindex += 2
             bytestring = filecontent[bufferindex]
             bufferindex += 2
@@ -187,7 +192,7 @@ def lexan():
 
 def error(s):
     global lineno
-    print('line ' + str(lineno) + ': '+s)
+    print('line ' + str(lineno) + ': ' + s)
 
 
 def match(token):
@@ -226,6 +231,7 @@ def sic():
     body()
     tail()
 
+
 def sic_xe():
     header()
     body()
@@ -250,7 +256,7 @@ def header():
 def tail():
     global totalsize, locctr, tokenval, startaddress
     match("END")
-    totalsize = locctr-startaddress
+    totalsize = locctr - startaddress
     if pass1or2 == 2:
         output.write(f'E{symtable[tokenval].att:06x}')
     match("ID")
@@ -277,21 +283,22 @@ def body():
 
 def stmt_ex():
     global lookahead
-    if lookahead=="f1":
+    if lookahead == "f1":
         match("f1")
-    elif lookahead=="f2":
+    elif lookahead == "f2":
         match("f2")
         match("REG")
         rest3()
-    elif lookahead=="f3":
+    elif lookahead == "f3":
         match("f3")
         rest4()
-    elif lookahead=="+":
+    elif lookahead == "+":
         match("+")
         match("f3")
         rest4()
     else:
         error('Syntax error')
+
 
 def rest3():
     global lookahead, inst
@@ -301,27 +308,28 @@ def rest3():
     else:
         return
 
+
 def rest4():
     global lookahead
-    if lookahead=="ID":
+    if lookahead == "ID":
         match("ID")
         index()
-    elif lookahead=="#":
+    elif lookahead == "#":
         match("#")
         match("ID")
         index()
-    elif lookahead=="@":
+    elif lookahead == "@":
         match("@")
         match("ID")
         index()
-    elif lookahead=="NUM":
+    elif lookahead == "NUM":
         match("NUM")
         index()
-    elif lookahead=="#":
+    elif lookahead == "#":
         match("#")
         match("NUM")
         index()
-    elif lookahead=="@":
+    elif lookahead == "@":
         match("@")
         match("NUM")
         index()
@@ -372,7 +380,7 @@ def data():
         match("NUM")
     elif lookahead == "RESW":
         match("RESW")
-        locctr += 3*tokenval
+        locctr += 3 * tokenval
         match("NUM")
     elif lookahead == "RESB":
         match("RESB")
@@ -392,7 +400,7 @@ def rest2():
         match("STRING")
     elif lookahead == "HEX":
         match("HEX")
-        locctr += lookahead/2
+        locctr += lookahead / 2
     else:
         error('Syntax error')
 
@@ -404,7 +412,8 @@ def main():
     filecontent = re.split(r"([\W])", w)
     i = 0
     while True:
-        while (filecontent[i] == ' ') or (filecontent[i] == '') or (filecontent[i] == '\t'):
+        while (filecontent[i] == ' ') or (filecontent[i] == '') or (
+                filecontent[i] == '\t'):
             del filecontent[i]
             if len(filecontent) == i:
                 break
@@ -412,7 +421,7 @@ def main():
         if len(filecontent) <= i:
             break
     # to be sure that the content ends with new line
-    if filecontent[len(filecontent)-1] != '\n':
+    if filecontent[len(filecontent) - 1] != '\n':
         filecontent.append('\n')
     for pass1or2 in range(1, 3):
         parse()
