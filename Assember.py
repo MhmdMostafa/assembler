@@ -34,7 +34,8 @@ def init():
     for i in range(0, instfile.inst.__len__()):
         insert(instfile.inst[i], instfile.token[i], instfile.opcode[i])
     for i in range(0, instfile.directives.__len__()):
-        insert(instfile.directives[i], instfile.dirtoken[i], instfile.dircode[i])
+        insert(instfile.directives[i],
+               instfile.dirtoken[i], instfile.dircode[i])
 
 
 file = open("input.sic", "r")
@@ -220,8 +221,10 @@ def checkindex():
 
 def parse():
     global file, filecontent, locctr, pass1or2, bufferindex, lineno, lookahead
-    sic()
+    # IF SIC/XE CALL sic_xe()
     sic_xe()
+    # IF SIC CALL sic()
+    # sic()
     # print("string\ttoken\tatt")
     # for i in range(len(symtable)):
     #     if symtable[i].token == "ID":
@@ -248,7 +251,8 @@ def header():
     lookahead = lexan()
     idindex = bufferindex
     if pass1or2 == 2:
-        output.write(f"H{symtable[tokenval].string} {tokenval:06} {totalsize:06x}\n")
+        output.write(
+            f"H{symtable[tokenval].string} {tokenval:06} {totalsize:06x}\n")
     match("ID")
     defid = False
     match("START")
@@ -275,16 +279,19 @@ def body():
         defid = False
         rest1()
         body()
-    elif lookahead == "f3":
+    elif lookahead == "f3" or lookahead == "+":
         if pass1or2 == 2:
             inst = 0
-        stmt()
+        # IF SIC/XE CALL stmt_xe()
+        stmt_xe()
+        # IF SIC CALL stmt()
+        # stmt()
         body()
     else:
         return
 
 
-def stmt_ex():
+def stmt_xe():
     global lookahead
     if lookahead == "f1":
         match("f1")
@@ -319,37 +326,40 @@ def rest4():
         index()
     elif lookahead == "#":
         match("#")
-        match("ID")
+        if lookahead == "ID":
+            match("ID")
+        elif lookahead == "NUM":
+            match("NUM")
+        else:
+            error('Syntax error')
         index()
     elif lookahead == "@":
-        match("@")
-        match("ID")
+        if lookahead == "ID":
+            match("ID")
+        elif lookahead == "NUM":
+            match("NUM")
+        else:
+            error('Syntax error')
         index()
     elif lookahead == "NUM":
         match("NUM")
         index()
-    elif lookahead == "#":
-        match("#")
-        match("NUM")
-        index()
-    elif lookahead == "@":
-        match("@")
-        match("NUM")
-        index()
     else:
-        error("Syntax error")
+        error('Syntax error')
 
 
 def rest1():
     global lookahead
-    if lookahead == "f3":
-        stmt()
-    elif (
-        lookahead == "WORD"
-        or lookahead == "RESW"
-        or lookahead == "RESB"
-        or lookahead == "BYTE"
-    ):
+
+    # IF SIC/XE CALL stmt_xe()
+    if lookahead == "f1" or lookahead == "f2" or lookahead == "f3":
+        stmt_xe()
+
+    # IF SIC CALL stmt()
+    # if lookahead == "f3":
+        # stmt()
+
+    elif lookahead == "WORD" or lookahead == "RESW" or lookahead == "RESB" or lookahead == "BYTE":
         data()
     else:
         error("Syntax error")
