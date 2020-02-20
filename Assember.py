@@ -34,8 +34,7 @@ def init():
     for i in range(0, instfile.inst.__len__()):
         insert(instfile.inst[i], instfile.token[i], instfile.opcode[i])
     for i in range(0, instfile.directives.__len__()):
-        insert(instfile.directives[i],
-               instfile.dirtoken[i], instfile.dircode[i])
+        insert(instfile.directives[i], instfile.dirtoken[i], instfile.dircode[i])
 
 
 file = open("input.sic", "r")
@@ -225,7 +224,7 @@ def parse():
     sic_xe()
     # IF SIC CALL sic()
     # sic()
-    
+
     # print("string\ttoken\tatt")
     # for i in range(len(symtable)):
     #     if symtable[i].token == "ID":
@@ -252,8 +251,7 @@ def header():
     lookahead = lexan()
     idindex = bufferindex
     if pass1or2 == 2:
-        output.write(
-            f"H{symtable[tokenval].string} {tokenval:06} {totalsize:06x}\n")
+        output.write(f"H{symtable[tokenval].string} {tokenval:06} {totalsize:06x}\n")
     match("ID")
     defid = False
     match("START")
@@ -325,9 +323,14 @@ def rest1():
 
     # IF SIC CALL stmt()
     # if lookahead == "f3":
-        # stmt()
+    # stmt()
 
-    elif lookahead == "WORD" or lookahead == "RESW" or lookahead == "RESB" or lookahead == "BYTE":
+    elif (
+        lookahead == "WORD"
+        or lookahead == "RESW"
+        or lookahead == "RESB"
+        or lookahead == "BYTE"
+    ):
         data()
     else:
         error("Syntax error")
@@ -366,7 +369,7 @@ def rest4():
         elif lookahead == "NUM":
             match("NUM")
         else:
-            error('Syntax error')
+            error("Syntax error")
         index()
     elif lookahead == "@":
         if lookahead == "ID":
@@ -374,13 +377,13 @@ def rest4():
         elif lookahead == "NUM":
             match("NUM")
         else:
-            error('Syntax error')
+            error("Syntax error")
         index()
     elif lookahead == "NUM":
         match("NUM")
         index()
     else:
-        error('Syntax error')
+        error("Syntax error")
 
 
 def index():
