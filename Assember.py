@@ -225,6 +225,7 @@ def parse():
     sic_xe()
     # IF SIC CALL sic()
     # sic()
+    
     # print("string\ttoken\tatt")
     # for i in range(len(symtable)):
     #     if symtable[i].token == "ID":
@@ -258,15 +259,6 @@ def header():
     match("START")
     locctr = startaddress = tokenval
     match("NUM")
-
-
-def tail():
-    global totalsize, locctr, tokenval, startaddress
-    match("END")
-    totalsize = locctr - startaddress
-    if pass1or2 == 2:
-        output.write(f"E{symtable[tokenval].att:06x}")
-    match("ID")
 
 
 def body():
@@ -310,6 +302,49 @@ def stmt_xe():
         error("Syntax error")
 
 
+def stmt():
+    global lookahead, locctr, inst
+    locctr += 3
+    if pass1or2 == 2:
+        inst = symtable[tokenval].att << 16
+    match("f3")
+    if pass1or2 == 2:
+        inst += symtable[tokenval].att
+    match("ID")
+    if pass1or2 == 2:
+        output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
+    index()
+
+
+def rest1():
+    global lookahead
+
+    # IF SIC/XE CALL stmt_xe()
+    if lookahead == "f1" or lookahead == "f2" or lookahead == "f3":
+        stmt_xe()
+
+    # IF SIC CALL stmt()
+    # if lookahead == "f3":
+        # stmt()
+
+    elif lookahead == "WORD" or lookahead == "RESW" or lookahead == "RESB" or lookahead == "BYTE":
+        data()
+    else:
+        error("Syntax error")
+
+
+def rest2():
+    global lookahead, locctr
+    if lookahead == "STRING":
+        locctr += tokenval
+        match("STRING")
+    elif lookahead == "HEX":
+        match("HEX")
+        locctr += lookahead / 2
+    else:
+        error("Syntax error")
+
+
 def rest3():
     global lookahead, inst
     if lookahead == ",":
@@ -348,37 +383,6 @@ def rest4():
         error('Syntax error')
 
 
-def rest1():
-    global lookahead
-
-    # IF SIC/XE CALL stmt_xe()
-    if lookahead == "f1" or lookahead == "f2" or lookahead == "f3":
-        stmt_xe()
-
-    # IF SIC CALL stmt()
-    # if lookahead == "f3":
-        # stmt()
-
-    elif lookahead == "WORD" or lookahead == "RESW" or lookahead == "RESB" or lookahead == "BYTE":
-        data()
-    else:
-        error("Syntax error")
-
-
-def stmt():
-    global lookahead, locctr, inst
-    locctr += 3
-    if pass1or2 == 2:
-        inst = symtable[tokenval].att << 16
-    match("f3")
-    if pass1or2 == 2:
-        inst += symtable[tokenval].att
-    match("ID")
-    if pass1or2 == 2:
-        output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
-    index()
-
-
 def index():
     global lookahead, inst
     if lookahead == ",":
@@ -411,16 +415,13 @@ def data():
         error("Syntax error")
 
 
-def rest2():
-    global lookahead, locctr
-    if lookahead == "STRING":
-        locctr += tokenval
-        match("STRING")
-    elif lookahead == "HEX":
-        match("HEX")
-        locctr += lookahead / 2
-    else:
-        error("Syntax error")
+def tail():
+    global totalsize, locctr, tokenval, startaddress
+    match("END")
+    totalsize = locctr - startaddress
+    if pass1or2 == 2:
+        output.write(f"E{symtable[tokenval].att:06x}")
+    match("ID")
 
 
 def main():
