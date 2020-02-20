@@ -48,6 +48,7 @@ totalsize = 0
 startaddress = 0
 idindex = 0
 inst = 0
+is_xe = False
 
 Xbit4set = 0x800000
 Bbit4set = 0x400000
@@ -217,10 +218,10 @@ def checkindex():
 
 def parse():
     global file, filecontent, locctr, pass1or2, bufferindex, lineno, lookahead
-    # IF SIC/XE CALL sic_xe()
-    sic_xe()
-    # IF SIC CALL sic()
-    # sic()
+    if is_xe:
+        sic_xe()
+    else:
+        sic()
 
     # print("string\ttoken\tatt")
     # for i in range(len(symtable)):
@@ -269,10 +270,10 @@ def body():
     elif lookahead == "f3" or lookahead == "+":
         if pass1or2 == 2:
             inst = 0
-        # IF SIC/XE CALL stmt_xe()
-        stmt_xe()
-        # IF SIC CALL stmt()
-        # stmt()
+        if is_xe:
+            stmt_xe()
+        else:
+            stmt()
         body()
     else:
         return
@@ -313,14 +314,11 @@ def stmt():
 
 def rest1():
     global lookahead
-
-    # IF SIC/XE CALL stmt_xe()
     if lookahead == "f1" or lookahead == "f2" or lookahead == "f3":
-        stmt_xe()
-
-    # IF SIC CALL stmt()
-    # if lookahead == "f3":
-    # stmt()
+        if is_xe:
+            stmt_xe()
+        else:
+            stmt()
 
     elif (
         lookahead == "WORD"
@@ -425,7 +423,10 @@ def tail():
 
 
 def main():
-    global file, filecontent, locctr, pass1or2, bufferindex, lineno
+    global file, filecontent, locctr, pass1or2, bufferindex, lineno, is_xe
+    mode = file.readline()  # SICXE Check
+    if "sicxe" in mode:
+        is_xe = True
     init()
     w = file.read()
     filecontent = re.split(r"([\W])", w)
@@ -452,6 +453,7 @@ def main():
         lineno = 1
 
     file.close()
+    output.close()
 
 
 main()
