@@ -2,9 +2,6 @@ import re
 import instfile
 import sys
 
-# Disable writing .pyc files
-sys.dont_write_bytecode = True
-
 
 class Entry:
     def __init__(self, string, token, attribute):
