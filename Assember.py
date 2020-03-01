@@ -31,7 +31,8 @@ def init():
     for i in range(0, instfile.inst.__len__()):
         insert(instfile.inst[i], instfile.token[i], instfile.opcode[i])
     for i in range(0, instfile.directives.__len__()):
-        insert(instfile.directives[i], instfile.dirtoken[i], instfile.dircode[i])
+        insert(instfile.directives[i],
+               instfile.dirtoken[i], instfile.dircode[i])
 
 
 file = open("input.sic", "r")
@@ -218,23 +219,24 @@ def checkindex():
 
 def parse():
     global file, filecontent, locctr, pass1or2, bufferindex, lineno, lookahead
-    if is_xe:
-        sic_xe()
-    else:
-        sic()
+    # if is_xe:
+    #     sic_xe()
+    # else:
+    #     sic()
+    sic_xe()
 
-    # print("string\ttoken\tatt")
-    # for i in range(len(symtable)):
-    #     if symtable[i].token == "ID":
-    #         print(symtable[i].string, "   ",
-    #               symtable[i].token, "   ", symtable[i].att)
-    # print(totalsize)
+    print("string\ttoken\tatt")
+    for i in range(len(symtable)):
+        if symtable[i].token == "ID":
+            print(symtable[i].string, "   ",
+                  symtable[i].token, "   ", symtable[i].att)
+    print(totalsize)
 
 
-def sic():
-    header()
-    body()
-    tail()
+# def sic():
+#     header()
+#     body()
+#     tail()
 
 
 def sic_xe():
@@ -249,7 +251,8 @@ def header():
     lookahead = lexan()
     idindex = bufferindex
     if pass1or2 == 2:
-        output.write(f"H{symtable[tokenval].string} {tokenval:06} {totalsize:06x}\n")
+        output.write(
+            f"H{symtable[tokenval].string} {tokenval:06} {totalsize:06x}\n")
     match("ID")
     defid = False
     match("START")
@@ -280,17 +283,27 @@ def body():
 
 
 def stmt_xe():
-    global lookahead
+    global lookahead, locctr
+    if pass1or2 == 2:
+        inst = symtable[tokenval].att << 16
     if lookahead == "f1":
+        locctr += 1
         match("f1")
+        if pass1or2 == 2:
+            output.write(f"T{locctr-1:06x} 03 {inst:01x}\n")
     elif lookahead == "f2":
+        locctr += 2
         match("f2")
         match("REG")
         rest3()
     elif lookahead == "f3":
+        locctr += 3
         match("f3")
+        if pass1or2 == 2:
+            inst += symtable[tokenval].att
         rest4()
     elif lookahead == "+":
+        locctr += 4
         match("+")
         match("f3")
         rest4()
