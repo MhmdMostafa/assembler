@@ -2,7 +2,7 @@ import re
 import instfile
 import sys
 
-
+print("Aziz")
 class Entry:
     def __init__(self, string, token, attribute):
         self.string = string
