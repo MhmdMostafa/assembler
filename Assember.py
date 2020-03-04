@@ -426,7 +426,7 @@ def rest4():
                 inst += Pbit3set
         if lookahead == "ID":
             if pass1or2 == 2:
-                inst += symtable[tokenval].token * 3
+                inst += symtable[tokenval].att * 3
                 if extend:
                     output.write(f"{inst:04x}\n")
                 else:
