@@ -1,2 +1,3 @@
 *.obj
 /__pycache__
+/.vscode

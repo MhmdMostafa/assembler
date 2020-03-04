@@ -276,7 +276,7 @@ def stmt():
             locctr += 1
             if pass1or2 == 2:
                 inst = symtable[tokenval].att
-                output.write(f"T{locctr-1:06x} 01 {inst:01x}\n")
+                output.write(f"T{locctr-1:06x} 01 {inst:02x}\n")
             match("f1")
 
         elif lookahead == "f2":
@@ -288,6 +288,7 @@ def stmt():
                 inst += symtable[tokenval].att << 4
             match("REG")
             rest3()
+            output.write(f"T{locctr-3:06x} 02 {inst:04x}\n")
 
         elif lookahead == "f3":
             locctr += 3
@@ -316,7 +317,7 @@ def stmt():
             inst += symtable[tokenval].att
         match("ID")
         if pass1or2 == 2:
-            output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
+            output.write(f"T{locctr-3:06x} 03 {inst:06x}\n")
         index()
 
 
@@ -371,15 +372,18 @@ def rest4():
                 position -= locctr + 0xF
 
             if extend:
-                inst += Nbitset + Ibitset
+                inst += (Nbitset + Ibitset) << 24
+                inst += Ebit4set
                 inst += Pbit4set
+                position += 4
                 inst += position
-                output.write(f"{inst:04x}\n")
+                output.write(f"{inst:08x}\n")
             else:
                 inst += (Nbitset + Ibitset) << 16
+                position += 3
                 inst += Pbit3set
                 inst += position  ### SOMETHING WRONG HAPPENING HERE
-                output.write(f"{inst:03x}\n")
+                output.write(f"{inst:06x}\n")
 
         match("ID")
         defid = False
@@ -387,11 +391,9 @@ def rest4():
     elif lookahead == "#":
         if pass1or2 == 2:
             if extend:
-                inst += Ibitset
-                inst += Pbit4set
+                inst += Ibitset << 24
             else:
-                inst += Ibitset
-                inst += Pbit3set
+                inst += Ibitset << 16
         match("#")
         if lookahead == "ID":
             if pass1or2 == 2:
@@ -400,26 +402,38 @@ def rest4():
                     position -= locctr
                 else:
                     position -= locctr + 0xF
+                if extend:
+                    inst += Pbit4set
+                    inst += Ebit4set
+                    # position += 4
+                    # inst += position
+                    output.write(f"{inst:08x}\n")
+                else:
+                    inst += Pbit3set
+                    position += 3
+                    # inst += position
+                    output.write(f"{inst:06x}\n")
             match("ID")
             defid = False
         elif lookahead == "NUM":
             if pass1or2 == 2:
-                position = tokenval
+                inst += tokenval
+                if extend:
+                    inst += Ebit4set
+                    output.write(f"{inst:08x}\n")
+                else:
+                    output.write(f"{inst:06x}\n")
             match("NUM")
         else:
             error("Syntax error")
-        if pass1or2 == 2:
-            inst += position
-            if extend:
-                output.write(f"{inst:04x}\n")
-            else:
-                output.write(f"{inst:03x}\n")
+
         index()
     elif lookahead == "@":
         match("@")
         if pass1or2 == 2:
             if extend:
                 inst += Nbitset << 24
+                inst += Ebit4set
                 inst += Pbit4set
             else:
                 inst += Nbitset << 16
@@ -428,9 +442,9 @@ def rest4():
             if pass1or2 == 2:
                 inst += symtable[tokenval].att * 3
                 if extend:
-                    output.write(f"{inst:04x}\n")
+                    output.write(f"{inst:08x}\n")
                 else:
-                    output.write(f"{inst:03x}\n")
+                    output.write(f"{inst:06x}\n")
             match("ID")
             defid = False
         elif lookahead == "NUM":
@@ -452,7 +466,10 @@ def index():
     if lookahead == ",":
         match(",")
         if pass1or2 == 2:
-            inst += Xbit3set
+            if extend:
+                inst += Xbit4set
+            else:
+                inst += Xbit3set
         match("REG")
     else:
         return
