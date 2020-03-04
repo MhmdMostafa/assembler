@@ -221,9 +221,9 @@ def parse():
     sic()
 
     print("string\ttoken\tatt")
-    for i in range(len(symtable)):
-        if symtable[i].token == "ID":
-            print(symtable[i].string, "   ", symtable[i].token, "   ", symtable[i].att)
+    for i in symtable:
+        if i.token == "ID" and pass1or2 == 2:
+            print(i.string, "\t", i.token, "\t", i.att)
     print(totalsize)
 
 
@@ -240,13 +240,13 @@ def header():
     idindex = bufferindex
     if pass1or2 == 2:
         output.write(
-            f"H{symtable[tokenval].string} {symtable[tokenval].att:06} {totalsize:06x}\n"
+            f"H{symtable[tokenval].string} {symtable[tokenval+ 1].att:06} {totalsize:06x}\n"
         )
     match("ID")
     defid = False
     match("START")
-    # if pass1or2 == 2:
-    #     output.write(f" {symtable[tokenval].att:06} {totalsize:06x}\n")
+    if pass1or2 == 2:
+        output.write(f" {symtable[tokenval].att:06} {totalsize:06x}\n")
     locctr = startaddress = tokenval
     match("NUM")
 
