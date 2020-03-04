@@ -374,12 +374,12 @@ def rest4():
                 inst += Nbitset + Ibitset << 24
                 inst += Pbit4set
                 inst += position
-                output.write(f"T{locctr-3:06x} 04 {inst:04x}\n")
+                output.write(f"{inst:04x}\n")
             else:
                 inst += Nbitset + Ibitset << 16
                 inst += Pbit3set
                 inst += position
-                output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
+                output.write(f"{inst:03x}\n")
 
         match("ID")
         defid = False
@@ -411,9 +411,9 @@ def rest4():
         if pass1or2 == 2:
             inst += position
             if extend:
-                output.write(f"T{locctr-3:06x} 04 {inst:04x}\n")
+                output.write(f"{inst:04x}\n")
             else:
-                output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
+                output.write(f"{inst:03x}\n")
         index()
     elif lookahead == "@":
         if pass1or2 == 2:
@@ -427,9 +427,9 @@ def rest4():
             if pass1or2 == 2:
                 inst += symtable[tokenval].token * 3
                 if extend:
-                    output.write(f"T{locctr-3:06x} 04 {inst:04x}\n")
+                    output.write(f"{inst:04x}\n")
                 else:
-                    output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
+                    output.write(f"{inst:03x}\n")
             match("ID")
             defid = False
         elif lookahead == "NUM":

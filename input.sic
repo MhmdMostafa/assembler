@@ -1,5 +1,5 @@
 sicxe
-COPY    START   1000
+COPY    START   0
 FIRST   STL     RETADR
         LDB     #LENGTH
 CLOOP   +JSUB   RDREC
