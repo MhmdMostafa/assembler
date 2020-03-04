@@ -281,8 +281,8 @@ def stmt():
             rest3()
         elif lookahead == "f3":
             locctr += 3
-        if pass1or2 == 2:
-            inst = symtable[tokenval].att << 16
+            if pass1or2 == 2:
+                inst = symtable[tokenval].att << 16
             match("f3")
             if pass1or2 == 2:
                 inst += symtable[tokenval].att
