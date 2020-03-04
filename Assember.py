@@ -262,65 +262,57 @@ def body():
     elif lookahead == "f3" or lookahead == "+":
         if pass1or2 == 2:
             inst = 0
-        if is_xe:
-            stmt_xe()
-        else:
-            stmt()
+        stmt()
         body()
     else:
         return
 
 
-def stmt_xe():
-    global lookahead, locctr
-    if pass1or2 == 2:
-        inst = symtable[tokenval].att << 16
-    if lookahead == "f1":
-        locctr += 1
-        match("f1")
+def stmt():
+    global lookahead, locctr, inst
+    if is_xe:
         if pass1or2 == 2:
-            output.write(f"T{locctr-1:06x} 03 {inst:01x}\n")
-    elif lookahead == "f2":
-        locctr += 2
-        match("f2")
-        match("REG")
-        rest3()
-    elif lookahead == "f3":
+            inst = symtable[tokenval].att << 16
+        if lookahead == "f1":
+            locctr += 1
+            match("f1")
+            if pass1or2 == 2:
+                output.write(f"T{locctr-1:06x} 03 {inst:01x}\n")
+        elif lookahead == "f2":
+            locctr += 2
+            match("f2")
+            match("REG")
+            rest3()
+        elif lookahead == "f3":
+            locctr += 3
+            match("f3")
+            if pass1or2 == 2:
+                inst += symtable[tokenval].att
+            rest4()
+        elif lookahead == "+":
+            locctr += 4
+            match("+")
+            match("f3")
+            rest4()
+        else:
+            error("Syntax error")
+    else:
         locctr += 3
+        if pass1or2 == 2:
+            inst = symtable[tokenval].att << 16
         match("f3")
         if pass1or2 == 2:
             inst += symtable[tokenval].att
-        rest4()
-    elif lookahead == "+":
-        locctr += 4
-        match("+")
-        match("f3")
-        rest4()
-    else:
-        error("Syntax error")
-
-
-def stmt():
-    global lookahead, locctr, inst
-    locctr += 3
-    if pass1or2 == 2:
-        inst = symtable[tokenval].att << 16
-    match("f3")
-    if pass1or2 == 2:
-        inst += symtable[tokenval].att
-    match("ID")
-    if pass1or2 == 2:
-        output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
-    index()
+        match("ID")
+        if pass1or2 == 2:
+            output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
+        index()
 
 
 def rest1():
     global lookahead
     if lookahead == "f1" or lookahead == "f2" or lookahead == "f3":
-        if is_xe:
-            stmt_xe()
-        else:
-            stmt()
+        stmt()
 
     elif (
         lookahead == "WORD"
