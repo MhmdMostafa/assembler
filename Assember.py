@@ -371,27 +371,27 @@ def rest4():
                 position -= locctr + 0xF
 
             if extend:
-                # inst += Nbitset + Ibitset
-                # inst += Pbit4set
+                inst += Nbitset + Ibitset
+                inst += Pbit4set
                 inst += position
                 output.write(f"{inst:04x}\n")
             else:
-                # inst += Nbitset + Ibitset
-                # inst += Pbit3set
-                inst += position
+                inst += (Nbitset + Ibitset) << 16
+                inst += Pbit3set
+                inst += position  ### SOMETHING WRONG HAPPENING HERE
                 output.write(f"{inst:03x}\n")
 
         match("ID")
         defid = False
         index()
     elif lookahead == "#":
-        # if pass1or2 == 2:
-        #     if extend:
-        #         inst += Ibitset
-        #         inst += Pbit4set
-        #     else:
-        #         inst += Ibitset
-        #         inst += Pbit3set
+        if pass1or2 == 2:
+            if extend:
+                inst += Ibitset
+                inst += Pbit4set
+            else:
+                inst += Ibitset
+                inst += Pbit3set
         match("#")
         if lookahead == "ID":
             if pass1or2 == 2:
@@ -417,13 +417,13 @@ def rest4():
         index()
     elif lookahead == "@":
         match("@")
-        # if pass1or2 == 2:
-        #     if extend:
-        #         inst += Nbitset << 24
-        #         inst += Pbit4set
-        #     else:
-        #         inst += Nbitset << 16
-        #         inst += Pbit3set
+        if pass1or2 == 2:
+            if extend:
+                inst += Nbitset << 24
+                inst += Pbit4set
+            else:
+                inst += Nbitset << 16
+                inst += Pbit3set
         if lookahead == "ID":
             if pass1or2 == 2:
                 inst += symtable[tokenval].att * 3
