@@ -282,8 +282,11 @@ def stmt():
             if pass1or2 == 2:
                 inst = symtable[tokenval].att << 8
             match("f2")
+            if pass1or2 == 2:
+                inst += symtable[tokenval].att << 4
             match("REG")
             rest3()
+
         elif lookahead == "f3":
             locctr += 3
             if pass1or2 == 2:
@@ -349,6 +352,8 @@ def rest3():
     global lookahead, inst
     if lookahead == ",":
         match(",")
+        if pass1or2 == 2:
+            inst += symtable[tokenval].att
         match("REG")
     else:
         return
