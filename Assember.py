@@ -218,11 +218,7 @@ def checkindex():
 
 def parse():
     global file, filecontent, locctr, pass1or2, bufferindex, lineno, lookahead
-    # if is_xe:
-    #     sic_xe()
-    # else:
-    #     sic()
-    sic_xe()
+    sic()
 
     print("string\ttoken\tatt")
     for i in range(len(symtable)):
@@ -231,13 +227,7 @@ def parse():
     print(totalsize)
 
 
-# def sic():
-#     header()
-#     body()
-#     tail()
-
-
-def sic_xe():
+def sic():
     header()
     body()
     tail()
