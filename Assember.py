@@ -273,26 +273,35 @@ def stmt():
     if is_xe:
         if lookahead == "f1":
             locctr += 1
-            match("f1")
             if pass1or2 == 2:
-                output.write(f"T{locctr-1:06x} 03 {inst:01x}\n")
+                inst = symtable[tokenval].att
+                output.write(f"T{locctr-1:06x} 01 {inst:01x}\n")
+            match("f1")
+
         elif lookahead == "f2":
             locctr += 2
+            if pass1or2 == 2:
+                inst = symtable[tokenval].att << 8
             match("f2")
             match("REG")
             rest3()
         elif lookahead == "f3":
             locctr += 3
-        if pass1or2 == 2:
-            inst = symtable[tokenval].att << 16
+            if pass1or2 == 2:
+                inst = symtable[tokenval].att << 16
             match("f3")
             if pass1or2 == 2:
                 inst += symtable[tokenval].att
             rest4()
         elif lookahead == "+":
             locctr += 4
+            if pass1or2 == 2:
+                inst = symtable[tokenval].att << 24
             match("+")
             match("f3")
+            if pass1or2 == 2:
+                inst += symtable[tokenval].att
+                inst += 0x002
             rest4()
         else:
             error("Syntax error")
