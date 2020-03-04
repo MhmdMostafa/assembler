@@ -2,7 +2,10 @@ import re
 import instfile
 import sys
 
-
+# THERE IS PROBLEM WITH SYMTABLE, SOME VALUES HAVE WROG ATT
+# I THINK THE PROBLEM is how to use defid
+# some opcode dose not use ebit(pc) like JSUB
+# WE NEED TO FIND OUT HOW TO USE @NUM
 class Entry:
     def __init__(self, string, token, attribute):
         self.string = string
@@ -132,9 +135,7 @@ def lexan():
             if p == -1:
                 # should we deal with literals?
                 p = insert(bytestring, "STRING", bytestringvalue)
-            # MAYBE WRONG
-            # MAYBE WRONG
-            tokenval = len(bytestring)
+            tokenval = p
         # a string can start with C' or only with '
         elif filecontent[bufferindex] == "'":
             bytestring = ""
@@ -152,9 +153,7 @@ def lexan():
             if p == -1:
                 # should we deal with literals?
                 p = insert(bytestring, "STRING", bytestringvalue)
-            # MAYBE WRONG
-            # MAYBE WRONG
-            tokenval = len(bytestring)
+            tokenval = p
         elif (
             filecontent[bufferindex].upper() == "X"
             and filecontent[bufferindex + 1] == "'"
@@ -225,6 +224,7 @@ def parse():
             if i.token == "ID":
                 print(i.string, "\t", i.token, "\t", i.att)
         print(f"\nSIZE\t {totalsize}\t {totalsize:x}")
+        # print(filecontent)
 
 
 def sic():
@@ -276,7 +276,7 @@ def stmt():
             locctr += 1
             if pass1or2 == 2:
                 inst = symtable[tokenval].att
-                output.write(f"T{locctr-1:06x} 01 {inst:02x}\n")
+                output.write(f"T{locctr-1:06x} 01 {inst:02x}\n".upper())
             match("f1")
 
         elif lookahead == "f2":
@@ -288,13 +288,13 @@ def stmt():
                 inst += symtable[tokenval].att << 4
             match("REG")
             rest3()
-            output.write(f"T{locctr-3:06x} 02 {inst:04x}\n")
+            output.write(f"T{locctr-3:06x} 02 {inst:04x}\n".upper())
 
         elif lookahead == "f3":
             locctr += 3
             if pass1or2 == 2:
                 inst = symtable[tokenval].att << 16
-                output.write(f"T{locctr-3:06x} 03 ")
+                output.write(f"T{locctr-3:06x} 03 ".upper())
             match("f3")
             rest4()
         elif lookahead == "+":
@@ -303,7 +303,7 @@ def stmt():
             match("+")
             if pass1or2 == 2:
                 inst = symtable[tokenval].att << 24
-                output.write(f"T{locctr-4:06x} 04 ")
+                output.write(f"T{locctr-4:06x} 04 ".upper())
             match("f3")
             rest4()
         else:
@@ -317,7 +317,7 @@ def stmt():
             inst += symtable[tokenval].att
         match("ID")
         if pass1or2 == 2:
-            output.write(f"T{locctr-3:06x} 03 {inst:06x}\n")
+            output.write(f"T{locctr-3:06x} 03 {inst:06x}\n".upper())
         index()
 
 
@@ -340,11 +340,17 @@ def rest1():
 def rest2():
     global lookahead, locctr
     if lookahead == "STRING":
-        locctr += tokenval
+        if pass1or2 == 2:
+            inst = symtable[tokenval].att
+            output.write(f"T{locctr-1:06x} {int(len(inst)/2):02x} {inst}\n".upper())
+        locctr += int(len(symtable[tokenval].att) / 2)
         match("STRING")
     elif lookahead == "HEX":
+        if pass1or2 == 2:
+            inst = symtable[tokenval].att
+            output.write(f"T{locctr-1:06x} {int(len(inst)/2):02x} {inst}\n".upper())
+        locctr += int(len(symtable[tokenval].att) / 2)
         match("HEX")
-        locctr += lookahead / 2
     else:
         error("Syntax error")
 
@@ -375,15 +381,16 @@ def rest4():
                 inst += (Nbitset + Ibitset) << 24
                 inst += Ebit4set
                 inst += Pbit4set
-                position += 4
-                inst += position
-                output.write(f"{inst:08x}\n")
+                # position += 4
+                # inst += position
+                output.write(f"{inst:08x}\n".upper())
             else:
                 inst += (Nbitset + Ibitset) << 16
-                position += 3
                 inst += Pbit3set
-                inst += position  ### SOMETHING WRONG HAPPENING HERE
-                output.write(f"{inst:06x}\n")
+                position += 3
+                # inst += Pbit3set
+                # inst += position  ### SOMETHING WRONG HAPPENING HERE
+                output.write(f"{inst:06x}\n".upper())
 
         match("ID")
         defid = False
@@ -407,12 +414,12 @@ def rest4():
                     inst += Ebit4set
                     # position += 4
                     # inst += position
-                    output.write(f"{inst:08x}\n")
+                    output.write(f"{inst:08x}\n".upper())
                 else:
                     inst += Pbit3set
-                    position += 3
+                    # position += 3
                     # inst += position
-                    output.write(f"{inst:06x}\n")
+                    output.write(f"{inst:06x}\n".upper())
             match("ID")
             defid = False
         elif lookahead == "NUM":
@@ -420,9 +427,9 @@ def rest4():
                 inst += tokenval
                 if extend:
                     inst += Ebit4set
-                    output.write(f"{inst:08x}\n")
+                    output.write(f"{inst:08x}\n".upper())
                 else:
-                    output.write(f"{inst:06x}\n")
+                    output.write(f"{inst:06x}\n".upper())
             match("NUM")
         else:
             error("Syntax error")
@@ -442,9 +449,9 @@ def rest4():
             if pass1or2 == 2:
                 inst += symtable[tokenval].att * 3
                 if extend:
-                    output.write(f"{inst:08x}\n")
+                    output.write(f"{inst:08x}\n".upper())
                 else:
-                    output.write(f"{inst:06x}\n")
+                    output.write(f"{inst:06x}\n".upper())
             match("ID")
             defid = False
         elif lookahead == "NUM":
