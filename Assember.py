@@ -239,14 +239,12 @@ def header():
     lookahead = lexan()
     idindex = bufferindex
     if pass1or2 == 2:
-        output.write(
-            f"H{symtable[tokenval].string} {symtable[tokenval+1].att:06} {totalsize:06x}\n"
-        )
+        output.write(f"H{symtable[tokenval].string} ")
     match("ID")
     defid = False
     match("START")
-    # if pass1or2 == 2:
-    #     output.write(f" {symtable[tokenval].att:06} {totalsize:06x}\n")
+    if pass1or2 == 2:
+        output.write(f" {tokenval:06} {totalsize:06x}\n")
     locctr = startaddress = tokenval
     match("NUM")
 
@@ -273,8 +271,6 @@ def body():
 def stmt():
     global lookahead, locctr, inst
     if is_xe:
-        if pass1or2 == 2:
-            inst = symtable[tokenval].att << 16
         if lookahead == "f1":
             locctr += 1
             match("f1")
@@ -287,6 +283,8 @@ def stmt():
             rest3()
         elif lookahead == "f3":
             locctr += 3
+        if pass1or2 == 2:
+            inst = symtable[tokenval].att << 16
             match("f3")
             if pass1or2 == 2:
                 inst += symtable[tokenval].att
