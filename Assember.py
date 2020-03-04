@@ -54,8 +54,8 @@ Bbit4set = 0x400000
 Pbit4set = 0x200000
 Ebit4set = 0x100000
 
-Nbitset = 0x02
-Ibitset = 0x01
+Nbitset = 2
+Ibitset = 1
 
 Xbit3set = 0x8000
 Bbit3set = 0x4000
@@ -106,7 +106,7 @@ def lexan():
         # del filecontent[bufferindex]
         bufferindex = bufferindex + 1
         return "NUM"
-    elif filecontent[bufferindex] in ["+", "#", ","]:
+    elif filecontent[bufferindex] in ["+", "#", ",", "@"]:
         c = filecontent[bufferindex]
         # del filecontent[bufferindex]
         bufferindex = bufferindex + 1
@@ -239,7 +239,7 @@ def header():
     lookahead = lexan()
     idindex = bufferindex
     if pass1or2 == 2:
-        output.write(f"H{symtable[tokenval].string} ")
+        output.write(f"H{symtable[tokenval].string}")
     match("ID")
     defid = False
     match("START")
@@ -322,7 +322,7 @@ def stmt():
 
 def rest1():
     global lookahead
-    if lookahead == "f1" or lookahead == "f2" or lookahead == "f3":
+    if lookahead == "f1" or lookahead == "f2" or lookahead == "f3" or lookahead == "+":
         stmt()
 
     elif (
@@ -416,6 +416,7 @@ def rest4():
                 output.write(f"{inst:03x}\n")
         index()
     elif lookahead == "@":
+        match("@")
         if pass1or2 == 2:
             if extend:
                 inst += Nbitset << 24
