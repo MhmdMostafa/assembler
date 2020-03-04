@@ -47,14 +47,15 @@ startaddress = 0
 idindex = 0
 inst = 0
 is_xe = False
+extend = False
 
 Xbit4set = 0x800000
 Bbit4set = 0x400000
 Pbit4set = 0x200000
 Ebit4set = 0x100000
 
-Nbitset = 2
-Ibitset = 1
+Nbitset = 0x02
+Ibitset = 0x01
 
 Xbit3set = 0x8000
 Bbit3set = 0x4000
@@ -249,7 +250,8 @@ def header():
 
 
 def body():
-    global lookahead, defid, inst
+    global lookahead, defid, inst, extend
+    extend = False
     defid = True
     if pass1or2 == 2:
         inst = 0
@@ -268,7 +270,7 @@ def body():
 
 
 def stmt():
-    global lookahead, locctr, inst
+    global lookahead, locctr, inst, extend
     if is_xe:
         if lookahead == "f1":
             locctr += 1
@@ -290,20 +292,18 @@ def stmt():
         elif lookahead == "f3":
             locctr += 3
             if pass1or2 == 2:
-                inst = symtable[tokenval].att << 16
+                inst = symtable[tokenval].att
+                output.write(f"T{locctr-1:06x} 03 ")
             match("f3")
-            if pass1or2 == 2:
-                inst += symtable[tokenval].att
             rest4()
         elif lookahead == "+":
+            extend = True
             locctr += 4
-            if pass1or2 == 2:
-                inst = symtable[tokenval].att << 24
             match("+")
-            match("f3")
             if pass1or2 == 2:
-                inst += symtable[tokenval].att
-                inst += 0x002
+                inst = symtable[tokenval].att
+                output.write(f"T{locctr-1:06x} 04 ")
+            match("f3")
             rest4()
         else:
             error("Syntax error")
@@ -360,23 +360,69 @@ def rest3():
 
 
 def rest4():
-    global lookahead, defid
+    global lookahead, defid, inst, extend
     if lookahead == "ID":
+        if pass1or2 == 2:
+            position = symtable[tokenval].att
+            if position > locctr:
+                position -= locctr
+            else:
+                position -= locctr + 0xF
+
+            if extend:
+                inst += Nbitset + Ibitset + Pbit4set << 24
+                inst += position
+                output.write(f"T{locctr-3:06x} 04 {inst:04x}\n")
+            else:
+                inst += Nbitset + Ibitset + Pbit3set << 16
+                inst += position
+                output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
+
         match("ID")
         defid = False
         index()
     elif lookahead == "#":
+        if pass1or2 == 2:
+            if extend:
+                inst += Ibitset + Pbit4set << 24
+            else:
+                inst += Ibitset + Pbit3set << 16
         match("#")
         if lookahead == "ID":
+            if pass1or2 == 2:
+                position = symtable[tokenval].att
+                if position > locctr:
+                    position -= locctr
+                else:
+                    position -= locctr + 0xF
             match("ID")
             defid = False
         elif lookahead == "NUM":
+            if pass1or2 == 2:
+                position = hex(tokenval)
             match("NUM")
         else:
             error("Syntax error")
+        if pass1or2 == 2:
+            inst += position
+            if extend:
+                output.write(f"T{locctr-3:06x} 04 {inst:04x}\n")
+            else:
+                output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
         index()
     elif lookahead == "@":
+        if pass1or2 == 2:
+            if extend:
+                inst += Nbitset + Pbit4set << 24
+            else:
+                inst += Nbitset + Pbit3set << 16
         if lookahead == "ID":
+            if pass1or2 == 2:
+                inst += symtable[tokenval].token * 3
+                if extend:
+                    output.write(f"T{locctr-3:06x} 04 {inst:04x}\n")
+                else:
+                    output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
             match("ID")
             defid = False
         elif lookahead == "NUM":
@@ -385,6 +431,8 @@ def rest4():
             error("Syntax error")
         index()
     elif lookahead == "NUM":
+        if pass1or2 == 2:
+            inst += hex(tokenval)
         match("NUM")
         index()
     else:
