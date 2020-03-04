@@ -218,11 +218,12 @@ def parse():
     global file, filecontent, locctr, pass1or2, bufferindex, lineno, lookahead
     sic()
 
-    print("string\ttoken\tatt")
-    for i in symtable:
-        if i.token == "ID" and pass1or2 == 2:
-            print(i.string, "\t", i.token, "\t", i.att)
-    print(totalsize)
+    if pass1or2 == 2:
+        print("\nSTRING\tTOKEN\tATT")
+        for i in symtable:
+            if i.token == "ID":
+                print(i.string, "\t", i.token, "\t", i.att)
+        print(f"SIZE\t {totalsize}\t {totalsize:x}")
 
 
 def sic():
