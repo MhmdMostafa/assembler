@@ -370,11 +370,13 @@ def rest4():
                 position -= locctr + 0xF
 
             if extend:
-                inst += Nbitset + Ibitset + Pbit4set << 24
+                inst += Nbitset + Ibitset << 24
+                inst += Pbit4set
                 inst += position
                 output.write(f"T{locctr-3:06x} 04 {inst:04x}\n")
             else:
-                inst += Nbitset + Ibitset + Pbit3set << 16
+                inst += Nbitset + Ibitset << 16
+                inst += Pbit3set
                 inst += position
                 output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
 
@@ -384,9 +386,11 @@ def rest4():
     elif lookahead == "#":
         if pass1or2 == 2:
             if extend:
-                inst += Ibitset + Pbit4set << 24
+                inst += Ibitset << 24
+                inst += Pbit4set
             else:
-                inst += Ibitset + Pbit3set << 16
+                inst += Ibitset << 16
+                inst += Pbit3set
         match("#")
         if lookahead == "ID":
             if pass1or2 == 2:
@@ -413,9 +417,11 @@ def rest4():
     elif lookahead == "@":
         if pass1or2 == 2:
             if extend:
-                inst += Nbitset + Pbit4set << 24
+                inst += Nbitset << 24
+                inst += Pbit4set
             else:
-                inst += Nbitset + Pbit3set << 16
+                inst += Nbitset << 16
+                inst += Pbit3set
         if lookahead == "ID":
             if pass1or2 == 2:
                 inst += symtable[tokenval].token * 3
