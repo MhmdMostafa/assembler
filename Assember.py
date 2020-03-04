@@ -12,8 +12,6 @@ class Entry:
 
 symtable = []
 
-# print(symtable[12].string + ' ' + str(symtable[12].token) + ' ' + str(symtable[12].att))
-
 
 def lookup(s):
     for i in range(0, symtable.__len__()):
