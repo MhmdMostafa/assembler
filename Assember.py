@@ -240,7 +240,7 @@ def header():
     idindex = bufferindex
     if pass1or2 == 2:
         output.write(
-            f"H{symtable[tokenval].string} {symtable[tokenval].att:06} {totalsize:06x}\n"
+            f"H{symtable[tokenval].string} {symtable[tokenval+1].att:06} {totalsize:06x}\n"
         )
     match("ID")
     defid = False
