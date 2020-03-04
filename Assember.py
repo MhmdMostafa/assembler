@@ -292,8 +292,8 @@ def stmt():
         elif lookahead == "f3":
             locctr += 3
             if pass1or2 == 2:
-                inst = symtable[tokenval].att
-                output.write(f"T{locctr-1:06x} 03 ")
+                inst = symtable[tokenval].att << 16
+                output.write(f"T{locctr-3:06x} 03 ")
             match("f3")
             rest4()
         elif lookahead == "+":
@@ -301,8 +301,8 @@ def stmt():
             locctr += 4
             match("+")
             if pass1or2 == 2:
-                inst = symtable[tokenval].att
-                output.write(f"T{locctr-1:06x} 04 ")
+                inst = symtable[tokenval].att << 24
+                output.write(f"T{locctr-4:06x} 04 ")
             match("f3")
             rest4()
         else:
@@ -371,12 +371,12 @@ def rest4():
                 position -= locctr + 0xF
 
             if extend:
-                inst += Nbitset + Ibitset << 24
+                inst += Nbitset + Ibitset
                 inst += Pbit4set
                 inst += position
                 output.write(f"{inst:04x}\n")
             else:
-                inst += Nbitset + Ibitset << 16
+                inst += Nbitset + Ibitset
                 inst += Pbit3set
                 inst += position
                 output.write(f"{inst:03x}\n")
@@ -387,10 +387,10 @@ def rest4():
     elif lookahead == "#":
         if pass1or2 == 2:
             if extend:
-                inst += Ibitset << 24
+                inst += Ibitset
                 inst += Pbit4set
             else:
-                inst += Ibitset << 16
+                inst += Ibitset
                 inst += Pbit3set
         match("#")
         if lookahead == "ID":
