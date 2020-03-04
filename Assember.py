@@ -361,6 +361,7 @@ def rest3():
 
 def rest4():
     global lookahead, defid, inst, extend
+    position = 0
     if lookahead == "ID":
         if pass1or2 == 2:
             position = symtable[tokenval].att
@@ -403,7 +404,7 @@ def rest4():
             defid = False
         elif lookahead == "NUM":
             if pass1or2 == 2:
-                position = hex(tokenval)
+                position = tokenval
             match("NUM")
         else:
             error("Syntax error")
