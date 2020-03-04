@@ -220,11 +220,11 @@ def parse():
     sic()
 
     if pass1or2 == 2:
-        print("\nSTRING\tTOKEN\tATT")
+        print("\nSTRING\t TOKEN\t ATT")
         for i in symtable:
             if i.token == "ID":
                 print(i.string, "\t", i.token, "\t", i.att)
-        print(f"SIZE\t {totalsize}\t {totalsize:x}")
+        print(f"\nSIZE\t {totalsize}\t {totalsize:x}")
 
 
 def sic():
