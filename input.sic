@@ -1,3 +1,5 @@
 sicxe
 COPY    START   1000
+FIRST
 ADDR    A,S
+END     FIRST
