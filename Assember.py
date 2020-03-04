@@ -31,8 +31,7 @@ def init():
     for i in range(0, instfile.inst.__len__()):
         insert(instfile.inst[i], instfile.token[i], instfile.opcode[i])
     for i in range(0, instfile.directives.__len__()):
-        insert(instfile.directives[i],
-               instfile.dirtoken[i], instfile.dircode[i])
+        insert(instfile.directives[i], instfile.dirtoken[i], instfile.dircode[i])
 
 
 file = open("input.sic", "r")
@@ -228,8 +227,7 @@ def parse():
     print("string\ttoken\tatt")
     for i in range(len(symtable)):
         if symtable[i].token == "ID":
-            print(symtable[i].string, "   ",
-                  symtable[i].token, "   ", symtable[i].att)
+            print(symtable[i].string, "   ", symtable[i].token, "   ", symtable[i].att)
     print(totalsize)
 
 
@@ -251,11 +249,12 @@ def header():
     lookahead = lexan()
     idindex = bufferindex
     if pass1or2 == 2:
-        output.write(
-            f"H{symtable[tokenval].string} {tokenval:06} {totalsize:06x}\n")
+        output.write(f"H{symtable[tokenval].string}")
     match("ID")
     defid = False
     match("START")
+    if pass1or2 == 2:
+        output.write(f" {symtable[tokenval+1].att:06} {totalsize:06x}\n")
     locctr = startaddress = tokenval
     match("NUM")
 
@@ -366,14 +365,16 @@ def rest3():
 
 
 def rest4():
-    global lookahead
+    global lookahead, defid
     if lookahead == "ID":
         match("ID")
+        defid = False
         index()
     elif lookahead == "#":
         match("#")
         if lookahead == "ID":
             match("ID")
+            defid = False
         elif lookahead == "NUM":
             match("NUM")
         else:
@@ -382,6 +383,7 @@ def rest4():
     elif lookahead == "@":
         if lookahead == "ID":
             match("ID")
+            defid = False
         elif lookahead == "NUM":
             match("NUM")
         else:
