@@ -486,6 +486,8 @@ def data():
     global lookahead, tokenval, locctr
     if lookahead == "WORD":
         match("WORD")
+        if pass1or2 == 2:
+            output.write(f"T{locctr-1:06x} {3:02x} {tokenval:06x}\n".upper())
         locctr += 3
         match("NUM")
     elif lookahead == "RESW":
