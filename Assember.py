@@ -2,7 +2,7 @@ import re
 import instfile
 import sys
 
-# THERE IS PROBLEM WITH SYMTABLE, SOME VALUES HAVE WROG ATT
+# THERE IS PROBLEM WITH SYMTABLE, SOME VALUES HAVE WRONG ATT (DONE)
 # I THINK THE PROBLEM is how to use defid
 # some opcode dose not use ebit(pc) like JSUB
 # WE NEED TO FIND OUT HOW TO USE @NUM
@@ -47,7 +47,6 @@ lookahead = ""
 defid = True
 totalsize = 0
 startaddress = 0
-idindex = 0
 inst = 0
 is_xe = False
 extend = False
@@ -234,10 +233,9 @@ def sic():
 
 
 def header():
-    global lookahead, locctr, defid, pass1or2, startaddress, idindex
+    global lookahead, locctr, defid, pass1or2, startaddress
     defid = True
     lookahead = lexan()
-    idindex = bufferindex
     if pass1or2 == 2:
         output.write(f"H{symtable[tokenval].string}")
     match("ID")
@@ -252,7 +250,7 @@ def header():
 def body():
     global lookahead, defid, inst, extend
     extend = False
-    defid = True
+    defid = False
     if pass1or2 == 2:
         inst = 0
     if lookahead == "ID":
@@ -387,13 +385,11 @@ def rest4():
             else:
                 inst += (Nbitset + Ibitset) << 16
                 inst += Pbit3set
-                position += 3
-                # inst += Pbit3set
+                # position += 3
                 # inst += position  ### SOMETHING WRONG HAPPENING HERE
                 output.write(f"{inst:06x}\n".upper())
 
         match("ID")
-        defid = False
         index()
     elif lookahead == "#":
         if pass1or2 == 2:
@@ -421,7 +417,6 @@ def rest4():
                     # inst += position
                     output.write(f"{inst:06x}\n".upper())
             match("ID")
-            defid = False
         elif lookahead == "NUM":
             if pass1or2 == 2:
                 inst += tokenval
@@ -453,7 +448,6 @@ def rest4():
                 else:
                     output.write(f"{inst:06x}\n".upper())
             match("ID")
-            defid = False
         elif lookahead == "NUM":
             match("NUM")
         else:
