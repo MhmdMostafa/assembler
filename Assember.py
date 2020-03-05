@@ -3,7 +3,7 @@ import instfile
 import sys
 
 # THERE IS PROBLEM WITH SYMTABLE, SOME VALUES HAVE WRONG ATT (DONE)
-# I THINK THE PROBLEM is how to use defid
+# I THINK THE PROBLEM is how to use defid(done)
 # some opcode dose not use ebit(pc) like JSUB
 # WE NEED TO FIND OUT HOW TO USE @NUM
 class Entry:
@@ -379,14 +379,12 @@ def rest4():
                 inst += (Nbitset + Ibitset) << 24
                 inst += Ebit4set
                 inst += Pbit4set
-                # position += 4
-                # inst += position
+                inst += position
                 output.write(f"{inst:08x}\n".upper())
             else:
                 inst += (Nbitset + Ibitset) << 16
                 inst += Pbit3set
-                # position += 3
-                # inst += position  ### SOMETHING WRONG HAPPENING HERE
+                inst += position  ### SOMETHING WRONG HAPPENING HERE
                 output.write(f"{inst:06x}\n".upper())
 
         match("ID")
@@ -408,13 +406,11 @@ def rest4():
                 if extend:
                     inst += Pbit4set
                     inst += Ebit4set
-                    # position += 4
-                    # inst += position
+                    inst += position
                     output.write(f"{inst:08x}\n".upper())
                 else:
                     inst += Pbit3set
-                    # position += 3
-                    # inst += position
+                    inst += position
                     output.write(f"{inst:06x}\n".upper())
             match("ID")
         elif lookahead == "NUM":
@@ -442,7 +438,7 @@ def rest4():
                 inst += Pbit3set
         if lookahead == "ID":
             if pass1or2 == 2:
-                inst += symtable[tokenval].att * 3
+                inst += symtable[tokenval].att
                 if extend:
                     output.write(f"{inst:08x}\n".upper())
                 else:
