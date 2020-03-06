@@ -83,12 +83,12 @@ def lexan():
         # if filecontent == []:
         if len(filecontent) == bufferindex:
             return "EOF"
-        # elif filecontent[bufferindex] == '#':
-        #     defid = True
-        #     while filecontent[bufferindex] != '\n':
-        #         bufferindex = bufferindex + 1
-        #     lineno += 1
-        #     bufferindex = bufferindex + 1
+        elif filecontent[bufferindex] == ".":
+            defid = True
+            while filecontent[bufferindex] != "\n":
+                bufferindex = bufferindex + 1
+            lineno += 1
+            bufferindex = bufferindex + 1
         elif filecontent[bufferindex] == "\n":
             defid = True
             # del filecontent[bufferindex]
@@ -384,7 +384,7 @@ def rest4():
             else:
                 inst += (Nbitset + Ibitset) << 16
                 inst += Pbit3set
-                inst += position  ### SOMETHING WRONG HAPPENING HERE
+                inst += position  
                 output.write(f"{inst:06x}\n".upper())
 
         match("ID")
