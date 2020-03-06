@@ -291,15 +291,24 @@ def stmt():
 
             if pass1or2 == 2:
                 inst = symtable[tokenval].att << 16
-                # DONT REMOVE THIS IAM TRYING TO DO SOMETHING
-                # if "J" in lookahead:
-                #     match("f3")
-                #     inst += symtable[tokenval].att
-                #     output.write(f"T{locctr-3:06x} 03 {inst:06x}".upper())
-                #     return
-                # else:
-                #     output.write(f"T{locctr-3:06x} 03 ".upper())
-                output.write(f"T{locctr-3:06x} 03 ".upper())
+                # some opcode do spcial things
+                if "J" in symtable[tokenval].string:
+                    match("f3")
+                    if lookahead == "@":
+                        # need to do somthing here try to do it
+                        match("@")
+                        match("ID")
+                        index()
+                        return
+                    elif lookahead == "ID":
+                        inst += symtable[tokenval].att
+                        output.write(f"T{locctr-3:06x} 03 {inst:06x}\n".upper())
+                        match("ID")
+                        index()
+                        return
+                else:
+                    output.write(f"T{locctr-3:06x} 03 ".upper())
+                # output.write(f"T{locctr-3:06x} 03 ".upper())
             match("f3")
             rest4()
         elif lookahead == "+":
@@ -308,15 +317,17 @@ def stmt():
             match("+")
             if pass1or2 == 2:
                 inst = symtable[tokenval].att << 24
-                # DONT REMOVE THIS IAM TRYING TO DO SOMETHING
-                # if lookahead == "JSUB":
-                #     inst += symtable[tokenval].att
-                #     output.write(f"T{locctr-3:06x} 04 {inst:08x}".upper())
-                #     match("f3")
-                #     return
-                # else:
-                #     output.write(f"T{locctr-4:06x} 04 ".upper())
-                output.write(f"T{locctr-4:06x} 04 ".upper())
+                # some opcode do spcial things
+                if "J" in symtable[tokenval].string:
+                    match("f3")
+                    inst += symtable[tokenval].att
+                    output.write(f"T{locctr-3:06x} 04 {inst:08x}\n".upper())
+                    match("ID")
+                    index()
+                    return
+                else:
+                    output.write(f"T{locctr-4:06x} 04 ".upper())
+                # output.write(f"T{locctr-4:06x} 04 ".upper())
             match("f3")
             rest4()
         else:
