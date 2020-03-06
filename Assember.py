@@ -234,7 +234,6 @@ def sic():
 
 def header():
     global lookahead, locctr, defid, pass1or2, startaddress
-    defid = True
     lookahead = lexan()
     if pass1or2 == 2:
         output.write(f"H{symtable[tokenval].string}")
@@ -255,7 +254,6 @@ def body():
         inst = 0
     if lookahead == "ID":
         match("ID")
-        defid = False
         rest1()
         body()
     elif lookahead == "f3" or lookahead == "+":
