@@ -290,8 +290,17 @@ def stmt():
 
         elif lookahead == "f3":
             locctr += 3
+
             if pass1or2 == 2:
                 inst = symtable[tokenval].att << 16
+                # DONT REMOVE THIS IAM TRYING TO DO SOMETHING
+                # if "J" in lookahead:
+                #     match("f3")
+                #     inst += symtable[tokenval].att
+                #     output.write(f"T{locctr-3:06x} 03 {inst:06x}".upper())
+                #     return
+                # else:
+                #     output.write(f"T{locctr-3:06x} 03 ".upper())
                 output.write(f"T{locctr-3:06x} 03 ".upper())
             match("f3")
             rest4()
@@ -301,6 +310,14 @@ def stmt():
             match("+")
             if pass1or2 == 2:
                 inst = symtable[tokenval].att << 24
+                # DONT REMOVE THIS IAM TRYING TO DO SOMETHING
+                # if lookahead == "JSUB":
+                #     inst += symtable[tokenval].att
+                #     output.write(f"T{locctr-3:06x} 04 {inst:08x}".upper())
+                #     match("f3")
+                #     return
+                # else:
+                #     output.write(f"T{locctr-4:06x} 04 ".upper())
                 output.write(f"T{locctr-4:06x} 04 ".upper())
             match("f3")
             rest4()
@@ -384,7 +401,7 @@ def rest4():
             else:
                 inst += (Nbitset + Ibitset) << 16
                 inst += Pbit3set
-                inst += position  
+                inst += position
                 output.write(f"{inst:06x}\n".upper())
 
         match("ID")
