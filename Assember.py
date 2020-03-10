@@ -297,6 +297,9 @@ def stmt():
                     if lookahead == "@":
                         # need to do somthing here try to do it
                         match("@")
+                        l = lookup(symtable[tokenval].string)
+                        inst += symtable[l].att
+                        output.write(f"T{locctr-3:06x} 03 {inst:06x}\n".upper())
                         match("ID")
                         index()
                         return
