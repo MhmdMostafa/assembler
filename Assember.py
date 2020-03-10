@@ -238,7 +238,7 @@ def header():
     if pass1or2 == 2:
         output.write(f"H{symtable[tokenval].string}")
     match("ID")
-    defid = False
+    # defid = False
     match("START")
     if pass1or2 == 2:
         output.write(f" {tokenval:06} {totalsize:06x}\n")
@@ -292,26 +292,26 @@ def stmt():
             if pass1or2 == 2:
                 inst = symtable[tokenval].att << 16
                 # some opcode do spcial things
-                if "J" in symtable[tokenval].string:
-                    match("f3")
-                    if lookahead == "@":
-                        # need to do somthing here try to do it
-                        match("@")
-                        l = lookup(symtable[tokenval].string)
-                        inst += symtable[l].att
-                        output.write(f"T{locctr-3:06x} 03 {inst:06x}\n".upper())
-                        match("ID")
-                        index()
-                        return
-                    elif lookahead == "ID":
-                        inst += symtable[tokenval].att
-                        output.write(f"T{locctr-3:06x} 03 {inst:06x}\n".upper())
-                        match("ID")
-                        index()
-                        return
-                else:
-                    output.write(f"T{locctr-3:06x} 03 ".upper())
-                # output.write(f"T{locctr-3:06x} 03 ".upper())
+                # if "J" in symtable[tokenval].string:
+                #     match("f3")
+                #     if lookahead == "@":
+                #         # need to do somthing here try to do it
+                #         match("@")
+                #         l = lookup(symtable[tokenval].string)
+                #         inst += symtable[l].att
+                #         output.write(f"T{locctr-3:06x} 03 {inst:06x}\n".upper())
+                #         match("ID")
+                #         index()
+                #         return
+                #     elif lookahead == "ID":
+                #         inst += symtable[tokenval].att
+                #         output.write(f"T{locctr-3:06x} 03 {inst:06x}\n".upper())
+                #         match("ID")
+                #         index()
+                #         return
+                # else:
+                #     output.write(f"T{locctr-3:06x} 03 ".upper())
+                output.write(f"T{locctr-3:06x} 03 ".upper())
             match("f3")
             rest4()
         elif lookahead == "+":
@@ -321,16 +321,16 @@ def stmt():
             if pass1or2 == 2:
                 inst = symtable[tokenval].att << 24
                 # some opcode do spcial things
-                if "J" in symtable[tokenval].string:
-                    match("f3")
-                    inst += symtable[tokenval].att
-                    output.write(f"T{locctr-3:06x} 04 {inst:08x}\n".upper())
-                    match("ID")
-                    index()
-                    return
-                else:
-                    output.write(f"T{locctr-4:06x} 04 ".upper())
-                # output.write(f"T{locctr-4:06x} 04 ".upper())
+                # if "J" in symtable[tokenval].string:
+                #     match("f3")
+                #     inst += symtable[tokenval].att
+                #     output.write(f"T{locctr-3:06x} 04 {inst:08x}\n".upper())
+                #     match("ID")
+                #     index()
+                #     return
+                # else:
+                #     output.write(f"T{locctr-4:06x} 04 ".upper())
+                output.write(f"T{locctr-4:06x} 04 ".upper())
             match("f3")
             rest4()
         else:
