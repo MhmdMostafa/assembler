@@ -2,7 +2,10 @@ import re
 import instfile
 import sys
 
-
+# THERE IS PROBLEM WITH SYMTABLE, SOME VALUES HAVE WRONG ATT (DONE)
+# I THINK THE PROBLEM is how to use defid(done)
+# some opcode dose not use ebit(pc) like JSUB
+# WE NEED TO FIND OUT HOW TO USE @NUM
 class Entry:
     def __init__(self, string, token, attribute):
         self.string = string
@@ -44,9 +47,9 @@ lookahead = ""
 defid = True
 totalsize = 0
 startaddress = 0
-idindex = 0
 inst = 0
 is_xe = False
+extend = False
 
 Xbit4set = 0x800000
 Bbit4set = 0x400000
@@ -80,12 +83,12 @@ def lexan():
         # if filecontent == []:
         if len(filecontent) == bufferindex:
             return "EOF"
-        # elif filecontent[bufferindex] == '#':
-        #     defid = True
-        #     while filecontent[bufferindex] != '\n':
-        #         bufferindex = bufferindex + 1
-        #     lineno += 1
-        #     bufferindex = bufferindex + 1
+        elif filecontent[bufferindex] == ".":
+            defid = True
+            while filecontent[bufferindex] != "\n":
+                bufferindex = bufferindex + 1
+            lineno += 1
+            bufferindex = bufferindex + 1
         elif filecontent[bufferindex] == "\n":
             defid = True
             # del filecontent[bufferindex]
@@ -105,7 +108,7 @@ def lexan():
         # del filecontent[bufferindex]
         bufferindex = bufferindex + 1
         return "NUM"
-    elif filecontent[bufferindex] in ["+", "#", ","]:
+    elif filecontent[bufferindex] in ["+", "#", ",", "@"]:
         c = filecontent[bufferindex]
         # del filecontent[bufferindex]
         bufferindex = bufferindex + 1
@@ -131,9 +134,7 @@ def lexan():
             if p == -1:
                 # should we deal with literals?
                 p = insert(bytestring, "STRING", bytestringvalue)
-            # MAYBE WRONG
-            # MAYBE WRONG
-            tokenval = len(bytestring)
+            tokenval = p
         # a string can start with C' or only with '
         elif filecontent[bufferindex] == "'":
             bytestring = ""
@@ -151,9 +152,7 @@ def lexan():
             if p == -1:
                 # should we deal with literals?
                 p = insert(bytestring, "STRING", bytestringvalue)
-            # MAYBE WRONG
-            # MAYBE WRONG
-            tokenval = len(bytestring)
+            tokenval = p
         elif (
             filecontent[bufferindex].upper() == "X"
             and filecontent[bufferindex + 1] == "'"
@@ -224,7 +223,7 @@ def parse():
             if i.token == "ID":
                 print(i.string, "\t", i.token, "\t", i.att)
         print(f"\nSIZE\t {totalsize}\t {totalsize:x}")
-
+        # print(filecontent)
 
 def sic():
     header()
@@ -233,14 +232,12 @@ def sic():
 
 
 def header():
-    global lookahead, locctr, defid, pass1or2, startaddress, idindex
-    defid = True
+    global lookahead, locctr, defid, pass1or2, startaddress
     lookahead = lexan()
-    idindex = bufferindex
     if pass1or2 == 2:
-        output.write(f"H{symtable[tokenval].string} ")
+        output.write(f"H{symtable[tokenval].string}")
     match("ID")
-    defid = False
+    # defid = False
     match("START")
     if pass1or2 == 2:
         output.write(f" {tokenval:06} {totalsize:06x}\n")
@@ -249,13 +246,13 @@ def header():
 
 
 def body():
-    global lookahead, defid, inst
-    defid = True
+    global lookahead, defid, inst, extend
+    extend = False
+    defid = False
     if pass1or2 == 2:
         inst = 0
     if lookahead == "ID":
         match("ID")
-        defid = False
         rest1()
         body()
     elif lookahead == "f3" or lookahead == "+":
@@ -268,13 +265,13 @@ def body():
 
 
 def stmt():
-    global lookahead, locctr, inst
+    global lookahead, locctr, inst, extend
     if is_xe:
         if lookahead == "f1":
             locctr += 1
             if pass1or2 == 2:
                 inst = symtable[tokenval].att
-                output.write(f"T{locctr-1:06x} 01 {inst:01x}\n")
+                output.write(f"T{locctr-1:06x} 01 {inst:02x}\n".upper())
             match("f1")
 
         elif lookahead == "f2":
@@ -286,24 +283,54 @@ def stmt():
                 inst += symtable[tokenval].att << 4
             match("REG")
             rest3()
+            output.write(f"T{locctr-3:06x} 02 {inst:04x}\n".upper())
 
         elif lookahead == "f3":
             locctr += 3
+
             if pass1or2 == 2:
                 inst = symtable[tokenval].att << 16
+                # some opcode do spcial things
+                # if "J" in symtable[tokenval].string:
+                #     match("f3")
+                #     if lookahead == "@":
+                #         # need to do somthing here try to do it
+                #         match("@")
+                #         l = lookup(symtable[tokenval].string)
+                #         inst += symtable[l].att
+                #         output.write(f"T{locctr-3:06x} 03 {inst:06x}\n".upper())
+                #         match("ID")
+                #         index()
+                #         return
+                #     elif lookahead == "ID":
+                #         inst += symtable[tokenval].att
+                #         output.write(f"T{locctr-3:06x} 03 {inst:06x}\n".upper())
+                #         match("ID")
+                #         index()
+                #         return
+                # else:
+                #     output.write(f"T{locctr-3:06x} 03 ".upper())
+                output.write(f"T{locctr-3:06x} 03 ".upper())
             match("f3")
-            if pass1or2 == 2:
-                inst += symtable[tokenval].att
             rest4()
         elif lookahead == "+":
+            extend = True
             locctr += 4
+            match("+")
             if pass1or2 == 2:
                 inst = symtable[tokenval].att << 24
-            match("+")
+                # some opcode do spcial things
+                # if "J" in symtable[tokenval].string:
+                #     match("f3")
+                #     inst += symtable[tokenval].att
+                #     output.write(f"T{locctr-3:06x} 04 {inst:08x}\n".upper())
+                #     match("ID")
+                #     index()
+                #     return
+                # else:
+                #     output.write(f"T{locctr-4:06x} 04 ".upper())
+                output.write(f"T{locctr-4:06x} 04 ".upper())
             match("f3")
-            if pass1or2 == 2:
-                inst += symtable[tokenval].att
-                inst += 0x002
             rest4()
         else:
             error("Syntax error")
@@ -316,13 +343,13 @@ def stmt():
             inst += symtable[tokenval].att
         match("ID")
         if pass1or2 == 2:
-            output.write(f"T{locctr-3:06x} 03 {inst:03x}\n")
+            output.write(f"T{locctr-3:06x} 03 {inst:06x}\n".upper())
         index()
 
 
 def rest1():
     global lookahead
-    if lookahead == "f1" or lookahead == "f2" or lookahead == "f3":
+    if lookahead == "f1" or lookahead == "f2" or lookahead == "f3" or lookahead == "+":
         stmt()
 
     elif (
@@ -339,11 +366,17 @@ def rest1():
 def rest2():
     global lookahead, locctr
     if lookahead == "STRING":
-        locctr += tokenval
+        if pass1or2 == 2:
+            inst = symtable[tokenval].att
+            output.write(f"T{locctr-1:06x} {int(len(inst)/2):02x} {inst}\n".upper())
+        locctr += int(len(symtable[tokenval].att) / 2)
         match("STRING")
     elif lookahead == "HEX":
+        if pass1or2 == 2:
+            inst = symtable[tokenval].att
+            output.write(f"T{locctr-1:06x} {int(len(inst)/2):02x} {inst}\n".upper())
+        locctr += int(len(symtable[tokenval].att) / 2)
         match("HEX")
-        locctr += lookahead / 2
     else:
         error("Syntax error")
 
@@ -360,31 +393,93 @@ def rest3():
 
 
 def rest4():
-    global lookahead, defid
+    global lookahead, defid, inst, extend
+    position = 0
     if lookahead == "ID":
+        if pass1or2 == 2:
+            position = symtable[tokenval].att
+            if position > locctr:
+                position -= locctr
+            else:
+                position -= locctr + 0xF
+
+            if extend:
+                inst += (Nbitset + Ibitset) << 24
+                inst += Ebit4set
+                inst += Pbit4set
+                inst += position
+                output.write(f"{inst:08x}\n".upper())
+            else:
+                inst += (Nbitset + Ibitset) << 16
+                inst += Pbit3set
+                inst += position
+                output.write(f"{inst:06x}\n".upper())
+
         match("ID")
-        defid = False
         index()
     elif lookahead == "#":
+        if pass1or2 == 2:
+            if extend:
+                inst += Ibitset << 24
+            else:
+                inst += Ibitset << 16
         match("#")
         if lookahead == "ID":
+            if pass1or2 == 2:
+                position = symtable[tokenval].att
+                if position > locctr:
+                    position -= locctr
+                else:
+                    position -= locctr + 0xF
+                if extend:
+                    inst += Pbit4set
+                    inst += Ebit4set
+                    inst += position
+                    output.write(f"{inst:08x}\n".upper())
+                else:
+                    inst += Pbit3set
+                    inst += position
+                    output.write(f"{inst:06x}\n".upper())
             match("ID")
-            defid = False
         elif lookahead == "NUM":
+            if pass1or2 == 2:
+                inst += tokenval
+                if extend:
+                    inst += Ebit4set
+                    output.write(f"{inst:08x}\n".upper())
+                else:
+                    output.write(f"{inst:06x}\n".upper())
             match("NUM")
         else:
             error("Syntax error")
+
         index()
     elif lookahead == "@":
+        match("@")
+        if pass1or2 == 2:
+            if extend:
+                inst += Nbitset << 24
+                inst += Ebit4set
+                inst += Pbit4set
+            else:
+                inst += Nbitset << 16
+                inst += Pbit3set
         if lookahead == "ID":
+            if pass1or2 == 2:
+                inst += symtable[tokenval].att
+                if extend:
+                    output.write(f"{inst:08x}\n".upper())
+                else:
+                    output.write(f"{inst:06x}\n".upper())
             match("ID")
-            defid = False
         elif lookahead == "NUM":
             match("NUM")
         else:
             error("Syntax error")
         index()
     elif lookahead == "NUM":
+        if pass1or2 == 2:
+            inst += hex(tokenval)
         match("NUM")
         index()
     else:
@@ -396,7 +491,10 @@ def index():
     if lookahead == ",":
         match(",")
         if pass1or2 == 2:
-            inst += Xbit3set
+            if extend:
+                inst += Xbit4set
+            else:
+                inst += Xbit3set
         match("REG")
     else:
         return
@@ -406,6 +504,8 @@ def data():
     global lookahead, tokenval, locctr
     if lookahead == "WORD":
         match("WORD")
+        if pass1or2 == 2:
+            output.write(f"T{locctr-1:06x} {3:02x} {tokenval:06x}\n".upper())
         locctr += 3
         match("NUM")
     elif lookahead == "RESW":
