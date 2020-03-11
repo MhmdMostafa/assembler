@@ -225,7 +225,6 @@ def parse():
         print(f"\nSIZE\t {totalsize}\t {totalsize:x}")
         # print(filecontent)
 
-
 def sic():
     header()
     body()
