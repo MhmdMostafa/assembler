@@ -406,8 +406,8 @@ def rest4():
             if extend:
                 inst += (Nbitset + Ibitset) << 24
                 inst += Ebit4set
-                inst += Pbit4set
-                inst += position
+                # inst += Pbit4set
+                inst += symtable[tokenval].att
                 output.write(f"{inst:08x}\n".upper())
             else:
                 inst += (Nbitset + Ibitset) << 16
@@ -432,9 +432,9 @@ def rest4():
                 else:
                     position -= locctr + 0xF
                 if extend:
-                    inst += Pbit4set
+                    # inst += Pbit4set
                     inst += Ebit4set
-                    inst += position
+                    inst += symtable[tokenval].att
                     output.write(f"{inst:08x}\n".upper())
                 else:
                     inst += Pbit3set
@@ -460,7 +460,7 @@ def rest4():
             if extend:
                 inst += Nbitset << 24
                 inst += Ebit4set
-                inst += Pbit4set
+                # inst += Pbit4set
             else:
                 inst += Nbitset << 16
                 inst += Pbit3set

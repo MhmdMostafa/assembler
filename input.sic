@@ -1,21 +1,9 @@
 sicxe
-COPY    START   0
-FIRST   STL     RETADR
-        LDB     #LENGTH
-CLOOP   +JSUB   RDREC
-        LDA     LENGTH
-        COMP    #0
-        JEQ     ENDFIL
-        +JSUB   WRREC
-        J       CLOOP
-ENDFIL  LDA     EOF
-        STA     BUFFER
-        LDA     #3
-        STA     LENGTH
-        +JSUB   WRREC
-        J       @RETADR
-EOF     BYTE    C'EOF'
-RETADR  RESW    1
-LENGTH  RESW    1
-BUFFER  RESB    4096 
-END     FIRST
+SEC     START   0
+RS2     RESW    1
+ST2     LDA     XX2
+        J       YY2
+XX2     WORD    7
+YY2     ADD     #1
+ALOHA   +STA    RS2
+        END     ST2
