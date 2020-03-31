@@ -1,3 +1,10 @@
+/* 
+    Loader Assignment
+    // Saleh Alammar           362118497
+    // Mohammad Marwan         362118614
+    // Abdulaziz Almohaimeed   351108841
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 
