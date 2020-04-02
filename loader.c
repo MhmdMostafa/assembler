@@ -1,3 +1,9 @@
+/* 
+    Loader Assignment
+    // Saleh Alammar           362118497
+    // Mohammad Marwan         362118614
+    // Abdulaziz Almohaimeed   351108841
+*/
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,7 +12,7 @@
 int main()
 {
     FILE *fp = fopen("output.obj", "r");
-    int *mm = malloc(pow(2, 20));
+    int *mm = malloc((int)pow(2, 20));
     srand(time(NULL));
     int pm, prog_size, start_addr;
     char record = fgetc(fp);
@@ -35,9 +41,11 @@ int main()
 
     // // FOR TESTING
     // // Prints data in the memory
-    // for (int i = 0; i < prog_size; i++) {
+    // for (int i = 0; i < prog_size; i++)
+    // {
     //     printf("%3x ", *(mm + pm + start_addr + i));
-    //     if (i % 3 == 2) {
+    //     if (i % 3 == 2)
+    //     {
     //         printf("\n");
     //     }
     // }
@@ -45,6 +53,7 @@ int main()
 
 /*
 // INPUT WE USED 
+
 H CPYS 000064 000026
 T 000064 03 072003
 T 000067 03 53A00C
@@ -56,4 +65,5 @@ T 00007A 07 50726F6A656374
 T 000084 03 000007
 T 000087 03 000001
 E 000064
+
 */
