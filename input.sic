@@ -1,9 +1,8 @@
 sicxe
-SEC     START   0
-RS2     RESW    1
-ST2     LDA     XX2
-        J       YY2
-XX2     WORD    7
-YY2     ADD     #1
-ALOHA   +STA    RS2
-        END     ST2
+PROG    START   4096
+ALPHA   RESW    1
+BETA    LDA     GAMMA
+GAMMA   WORD    5
+DELTA   ADD     #50
+STA1    +STA    ALPHA
+END     ALPHA

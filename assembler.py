@@ -225,6 +225,7 @@ def parse():
         print(f"\nSIZE\t {totalsize}\t {totalsize:x}")
         # print(filecontent)
 
+
 def sic():
     header()
     body()
@@ -398,7 +399,7 @@ def rest4():
     if lookahead == "ID":
         if pass1or2 == 2:
             position = symtable[tokenval].att
-            if position > locctr:
+            if position >= locctr:
                 position -= locctr
             else:
                 position -= locctr + 0xF
@@ -427,7 +428,7 @@ def rest4():
         if lookahead == "ID":
             if pass1or2 == 2:
                 position = symtable[tokenval].att
-                if position > locctr:
+                if position >= locctr:
                     position -= locctr
                 else:
                     position -= locctr + 0xF
